@@ -6,6 +6,7 @@ class Quizzler extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         backgroundColor: Colors.grey.shade900,
         body: SafeArea(
@@ -25,6 +26,26 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
+  List<Icon> scoreKeeper = [];
+
+  List<String> questions = [
+    'You can lead a cow down stairs but not up stairs.',
+    'Approximately one quarter of human bones are in the feet.',
+    'A slug\'s blood is green.'
+  ];
+
+  List<bool> answers = [false, true, true];
+
+  int questionAt = 0;
+
+  Icon checkAnswer(bool userAnswer) {
+    if (userAnswer == answers[questionAt]) {
+      return Icon(Icons.check, color: Colors.green);
+    } else {
+      return Icon(Icons.close, color: Colors.red);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -37,7 +58,7 @@ class _QuizPageState extends State<QuizPage> {
             padding: EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                'This is where the question text will go.',
+                questions[questionAt],
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25.0,
@@ -62,6 +83,14 @@ class _QuizPageState extends State<QuizPage> {
               ),
               onPressed: () {
                 //The user picked true.
+                setState(() {
+                  if (questionAt >= questions.length) {
+                    scoreKeeper.add(checkAnswer(true));
+                  }
+                  if (questionAt < questions.length - 1) {
+                    questionAt++;
+                  }
+                });
               },
             ),
           ),
@@ -80,11 +109,22 @@ class _QuizPageState extends State<QuizPage> {
               ),
               onPressed: () {
                 //The user picked false.
+                setState(() {
+                  if (questionAt < questions.length) {
+                    scoreKeeper.add(checkAnswer(false));
+                  }
+                  if (questionAt < questions.length - 1) {
+                    questionAt++;
+                  }
+                });
               },
             ),
           ),
         ),
         //TODO: Add a Row here as your score keeper
+        Row(
+          children: scoreKeeper,
+        )
       ],
     );
   }
