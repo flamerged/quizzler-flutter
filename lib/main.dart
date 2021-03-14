@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'question.dart';
+import 'quiz_brain.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+
+QuizBrain quiz = QuizBrain();
 
 void main() => runApp(Quizzler());
 
@@ -29,22 +32,16 @@ class QuizPage extends StatefulWidget {
 class _QuizPageState extends State<QuizPage> {
   List<Icon> scoreKeeper = [];
 
-  List<Question> questions = [
-    Question(q: 'You can lead a cow down stairs but not up stairs.', a: false),
-    Question(
-        q: 'Approximately one quarter of human bones are in the feet.',
-        a: true),
-    Question(q: 'A slug\'s blood is green.', a: true),
-  ];
+  void checkAnswer(bool userAnswer) {
+    setState(() {
+      if (userAnswer == quiz.getAnswer()) {
+        scoreKeeper.add(Icon(Icons.check, color: Colors.green));
+      } else {
+        scoreKeeper.add(Icon(Icons.close, color: Colors.red));
+      }
 
-  int questionAt = 0;
-
-  Icon checkAnswer(bool userAnswer) {
-    if (userAnswer == questions[questionAt].questionAnswer) {
-      return Icon(Icons.check, color: Colors.green);
-    } else {
-      return Icon(Icons.close, color: Colors.red);
-    }
+      quiz.nextQuestion();
+    });
   }
 
   @override
@@ -59,7 +56,7 @@ class _QuizPageState extends State<QuizPage> {
             padding: EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                questions[questionAt].questionText,
+                quiz.getQuestionText(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25.0,
@@ -84,14 +81,29 @@ class _QuizPageState extends State<QuizPage> {
               ),
               onPressed: () {
                 //The user picked true.
-                setState(() {
-                  if (questionAt < questions.length) {
-                    scoreKeeper.add(checkAnswer(true));
-                  }
-                  if (questionAt < questions.length - 1) {
-                    questionAt++;
-                  }
-                });
+                if (quiz.isFinished()) {
+                  checkAnswer(true);
+                  Alert(
+                    context: context,
+                    type: AlertType.error,
+                    title: "Quiz Over",
+                    desc: "You answered all questions.",
+                    buttons: [
+                      DialogButton(
+                        child: Text(
+                          "Restart",
+                          style: TextStyle(color: Colors.white, fontSize: 20),
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                        width: 120,
+                      )
+                    ],
+                  ).show();
+                  quiz.reset();
+                  scoreKeeper.clear();
+                } else {
+                  checkAnswer(true);
+                }
               },
             ),
           ),
@@ -110,19 +122,33 @@ class _QuizPageState extends State<QuizPage> {
               ),
               onPressed: () {
                 //The user picked false.
-                setState(() {
-                  if (questionAt < questions.length) {
-                    scoreKeeper.add(checkAnswer(false));
-                  }
-                  if (questionAt < questions.length - 1) {
-                    questionAt++;
-                  }
-                });
+                if (quiz.isFinished()) {
+                  checkAnswer(false);
+                  Alert(
+                    context: context,
+                    type: AlertType.error,
+                    title: "Quiz Over",
+                    desc: "You answered all questions.",
+                    buttons: [
+                      DialogButton(
+                        child: Text(
+                          "Restart",
+                          style: TextStyle(color: Colors.white, fontSize: 20),
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                        width: 120,
+                      )
+                    ],
+                  ).show();
+                  quiz.reset();
+                  scoreKeeper.clear();
+                } else {
+                  checkAnswer(false);
+                }
               },
             ),
           ),
         ),
-        //TODO: Add a Row here as your score keeper
         Row(
           children: scoreKeeper,
         )
